@@ -1,0 +1,59 @@
+<html>
+<head>
+    <script>
+        function calc() {
+            const val = document.querySelector('*[name=version]').value;
+            let apiVersion;
+            let internalVersion;
+            let market;
+            if (/^\d+$/.test(val)) {
+                internalVersion = +val;
+            } else if (/^\d+\.0$/.test(val)) {
+                internalVersion = parseInt(val, 10) * 2 + 128
+            } else {
+                const match = /(Summer|Winter|Spring)\s+'(\d+)/.exec(val);
+                if (match) {
+                    const year = +match[2] + 2000; 
+                    internalVersion = (((year - 2004) * 3) - 1) * 2 + 128;
+                    if ('summer' === match[1].toLowerCase()) {
+                        internalVersion += 2;
+                    } else if ('spring' === match[1].toLowerCase()) {
+                        internalVersion += 1;
+                    }
+                }
+            }
+            
+            if (internalVersion < 128) {
+                apiVersion = 'invalid, needs >= 130';
+            } else if (internalVersion % 2) {
+                apiVersion = 'invalid, needs even';
+            } else {
+                apiVersion =  (internalVersion - 128) / 2;
+            }
+            let seasonNum = apiVersion % 3;
+            let season = seasonNum == 2 ? 'Winter' : seasonNum == 1 ? 'Summer' : 'Spring';
+            let year = Math.ceil( (apiVersion-1) / 3 ) + 2004;
+            market = `${season} '${ String(year%1000).padStart(2, '0')}`;
+
+            const output = `API Version: ${apiVersion}.0\nInternal Version: ${internalVersion}\nMarketing Version: ${market}`;
+            document.querySelector('*[name=output]').value = output;
+        }
+    </script>
+    <style>
+        body * {
+            display: block;
+            width: 300px;
+        }
+        textarea {
+            height: 100px;
+           
+        }
+    </style>
+</head>
+<body>
+    Input: (i.e. 228, Summer '20, 42.0) <input name="version" onchange="calc()">
+    Output: <textarea name="output"></textarea>
+    <input type="button" value="Calculate" onclick="calc()"></input>
+</body>
+</html>
+
